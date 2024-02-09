@@ -1,30 +1,18 @@
-use actix_web::{web, App, HttpResponse, HttpServer};
+use actix_web::{web,post, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize)]
-struct RequestData {
-    name: String,
-}
+mod crud;
 
-#[derive(Serialize)]
-struct ResponseData {
-    message: String,
-}
-
-
-async fn greet_user(info: web::Json<RequestData>) -> HttpResponse {
-    let response = ResponseData {
-        message: "hello world".to_string()
-    };
-    HttpResponse::Ok().json(response)
-}
 
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
-            .route("/greet", web::post().to(greet_user))
+            .service(create_card)
+            .service(update_card)
+            .service(delete_card)
+            .service(get_card)
     })
     .bind("127.0.0.1:8080")?
     .run()

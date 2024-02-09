@@ -1,14 +1,19 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Card {
+    term: String,
+    definition: String,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl Card {
+    pub fn new(term: &str, definition: &str) -> Self {
+        println!("this is being called");
+        Self { term: term.to_string(), definition: definition.to_string() }
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub fn say_hello() {
+        println!("hello");
     }
 }
+

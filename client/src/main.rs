@@ -1,36 +1,25 @@
 use reqwest::Error;
 use serde::{Deserialize, Serialize};
+use std::io::{self, Write};
 
-#[derive(Serialize)]
-struct RequestData {
-    name: String,
-}
-
-#[derive(Deserialize)]
-struct ResponseData {
-    message: String,
-}
+use crud::process_request;
+mod crud;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     let client = reqwest::Client::new();
-    let url = "http://127.0.0.1:8080/greet";
 
-    // Data to send
-    let request_data = RequestData {
-        name: "Alice".into(),
-    };
+    loop {
+        print!("> ");
 
-    // Send a POST request and wait for the JSON response
-    let response = client
-        .post(url)
-        .json(&request_data)
-        .send()
-        .await?
-        .json::<ResponseData>()
-        .await?;
+        io::stdout().flush().unwrap();
 
-    println!("Server response: {}", response.message);
+        let mut input = String::new();
 
-    Ok(())
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => process_request(input),
+            Err(_) => println!("There was an error getting input"),
+        }
+    }
+
 }
