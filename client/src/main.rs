@@ -7,6 +7,7 @@ mod crud;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+    // create our client
     let client = reqwest::Client::new();
 
     loop {
@@ -14,12 +15,10 @@ async fn main() -> Result<(), Error> {
 
         io::stdout().flush().unwrap();
 
+        // get input and process it
         let mut input = String::new();
-
-        match io::stdin().read_line(&mut input) {
-            Ok(_) => process_request(input),
-            Err(_) => println!("There was an error getting input"),
-        }
+        let _ = io::stdin().read_line(&mut input);
+        process_request(input, &client).await;
     }
 
 }

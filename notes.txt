@@ -1,0 +1,45 @@
+What is the idea behind all of this?
+-------------------------------------
+- have a client, a server, and common
+- want something that will implement spaced reptition for flashcards
+  - https://ncase.me/remember/
+- what are all of the functions
+client
+- will run on the host machine
+- ill start this out just as a command line thing then move it to a tui eventually
+- it will communicate with some server that will contain all the cards and logic for the spaced repetition learning
+- the client should have the functionality to add a card, delete a card, modify a card, and try to answer prompts correctly
+  - maybe something with card groups/directory structure in a way
+- client api...
+
+server
+- this will run on an aws server
+- the idea behind this is to implement all of the server logic that we need to run the app
+- it should communicate with a database that stores all of the card
+- it should have the logic for sending which cards need to be reviewed to the client
+
+common
+- this is just for common functionality that is going to be used by both the client and the server
+- card definitions, errors, etc
+
+
+- need some way to interact with cards via a id, rather than their name
+
+
+Api design???
+client:
+- add_card(term: String, def: String)
+  - adds a card to our list of cards
+  - will construct the card and then send it over to the webserver
+- remove_card(term: String)
+  - removes a card from the list of cards
+  - will send a message to the webserver with the term we want to remove
+
+
+server:
+- add_card_to_database()..
+  - will recieve the message from the client, extract the info, and then add a card to the database
+
+
+
+  

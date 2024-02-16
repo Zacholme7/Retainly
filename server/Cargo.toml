@@ -9,4 +9,6 @@ edition = "2021"
 actix-web = "4.5.1"
 serde = {version = "1.0.196", features = ["derive"]}
 common = {path = "../common"}
+rusqlite = "0.30.0"
+anyhow = "1.0.79"
 
