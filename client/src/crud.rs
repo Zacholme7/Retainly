@@ -1,12 +1,14 @@
 use common::Card;
-use reqwest::Error;
 use std::io::{self, Write};
 
 /// URL of the webserver
 const URL: &str = "http://127.0.0.1:8080";
 
-/// Process request from tui to update card state
-pub async fn process_request(input: String, client: &reqwest::Client) {
+/// Process request
+pub async fn process_request(
+    input: String,
+    client: &reqwest::Client,
+) -> Result<(), Box<dyn std::error::Error>> {
     println!("{}", input);
     match input.as_str().trim() {
         "add" => {
@@ -18,41 +20,47 @@ pub async fn process_request(input: String, client: &reqwest::Client) {
             io::stdout().flush().unwrap();
             let definition = read_trimmed_line();
 
-            println!("Term {}, definition {}", term, definition);
-            create_card(&client, term, definition).await.unwrap();
-        },
-        "list" => {
-            list_cards(&client).await;
-
+            create_card(&client, term, definition).await?;
         }
-
-        _ => println!("unknown command"),
+        "list" => list_cards(&client).await?,
+        _ => return Err("Unknown command".into()),
     }
+    Ok(())
 }
 
-/// Request to create a new card
+/// Create a new card in the database
 pub async fn create_card(
     client: &reqwest::Client,
     term: String,
     definition: String,
-) -> Result<(), Error> {
-    // create the new card and construct the url
-    let url = format!("{}/create_new_card", URL);
+) -> Result<(), Box<dyn std::error::Error>> {
+    // create url, card, and send request
+    let url = format!("{}/insert_card", URL);
     let new_card = Card::new(term, definition);
-
-    // send the request
     let response = client.post(url).json(&new_card).send().await?;
-    //.text()
-    //.await;
 
-    println!("{:?}", response);
-    Ok(())
+    // process the response and handle errors
+    if response.status().is_success() {
+        return Ok(());
+    } else {
+        return Err(response.text().await?.into());
+    }
 }
 
-pub async fn list_cards(client: &reqwest::Client) {
-    println!("running");
-    let url = format!("{}/list_all", URL);
-    let response = client.post(url).send().await;
+/// Get all of the cards in the database
+pub async fn list_cards(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
+    // construct the url and send the request
+    let url = format!("{}/list_all_cards", URL); // Ensure the endpoint matches the server's route
+    let response = client.get(&url).send().await?;
+
+    // process the response and handle errors
+    if response.status().is_success() {
+        let cards: Vec<Card> = response.json().await?;
+        println!("Cards: {:?}", cards);
+        Ok(())
+    } else {
+        return Err(response.text().await?.into());
+    }
 }
 
 fn read_trimmed_line() -> String {
