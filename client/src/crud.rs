@@ -20,7 +20,12 @@ pub async fn process_request(input: String, client: &reqwest::Client) {
 
             println!("Term {}, definition {}", term, definition);
             create_card(&client, term, definition).await.unwrap();
+        },
+        "list" => {
+            list_cards(&client).await;
+
         }
+
         _ => println!("unknown command"),
     }
 }
@@ -42,6 +47,12 @@ pub async fn create_card(
 
     println!("{:?}", response);
     Ok(())
+}
+
+pub async fn list_cards(client: &reqwest::Client) {
+    println!("running");
+    let url = format!("{}/list_all", URL);
+    let response = client.post(url).send().await;
 }
 
 fn read_trimmed_line() -> String {

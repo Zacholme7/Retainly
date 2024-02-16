@@ -16,3 +16,14 @@ async fn create_new_card(conn: web::Data<Arc<Mutex<Connection>>>, card: web::Jso
     HttpResponse::Ok().finish()
 }
 
+#[post("/list_all")]
+async fn list_all_cards(conn: web::Data<Arc<Mutex<Connection>>>) -> HttpResponse {
+    println!("Gettign all of the cards");
+    let conn = conn.lock().unwrap();
+    let cards = query_cards(&conn);
+    for card in cards {
+        println!("{:?}", card);
+    }
+    HttpResponse::Ok().finish()
+}
+

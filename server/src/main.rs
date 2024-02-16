@@ -22,6 +22,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(conn.clone()))
             .service(create_new_card)
+            .service(list_all_cards)
     })
     .bind("127.0.0.1:8080")?
     .run()

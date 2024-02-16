@@ -19,3 +19,20 @@ pub fn insert_card(conn: &Connection, card: &Card) -> Result<(), Box<dyn std::er
     )?;
     Ok(())
 }
+
+pub fn query_cards(conn: &Connection) -> Result<Vec<Card>, Box<dyn std::error::Error>> {
+    let mut stmt = conn.prepare("SELECT term, definition FROM card")?;
+    let card_iter = stmt.query_map([], |row| {
+        Ok(Card {
+            term: row.get(0)?,
+            definition: row.get(1)?,
+        })
+    })?;
+
+    let mut cards = Vec::new();
+    for card in card_iter {
+        cards.push(card?);
+    }
+
+    Ok(cards)
+}
