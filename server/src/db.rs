@@ -17,7 +17,7 @@ pub fn create_table(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
 /// Insert a card into the database
 pub fn insert_card_into_db(conn: &Connection, card: &Card) -> Result<(), Box<dyn std::error::Error>> {
     conn.execute(
-        "INSERT INTO card (term, definition) VALUES (?1, ?2)",
+        "INSERT INTO card (term, definition, id) VALUES (?1, ?2, ?3)",
         &[&card.term, &card.definition],
     )?;
     Ok(())
@@ -25,11 +25,12 @@ pub fn insert_card_into_db(conn: &Connection, card: &Card) -> Result<(), Box<dyn
 
 /// Get a list of all the cards in the database
 pub fn query_cards(conn: &Connection) -> Result<Vec<Card>, Box<dyn std::error::Error>> {
-    let mut stmt = conn.prepare("SELECT term, definition FROM card")?;
+    let mut stmt = conn.prepare("SELECT id, term, definition FROM card")?;
     let card_iter = stmt.query_map([], |row| {
         Ok(Card {
-            term: row.get(0)?,
-            definition: row.get(1)?,
+            id: Some(row.get(0)?),
+            term: row.get(1)?,
+            definition: row.get(2)?,
         })
     })?;
 

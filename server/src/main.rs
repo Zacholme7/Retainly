@@ -3,9 +3,11 @@ use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
 
 use crud::*;
-use sql::*;
+use db::*;
+use logic::*;
 mod crud;
-mod sql;
+mod db;
+mod logic;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -14,6 +16,9 @@ async fn main() -> std::io::Result<()> {
     create_table(&conn).unwrap();
 
     let conn = Arc::new(Mutex::new(conn));
+
+    // create the core of the application
+    let core = SpacedRepetition {day : 0};
 
     // start the http server
     HttpServer::new(move || {

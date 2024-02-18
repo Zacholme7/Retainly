@@ -23,13 +23,39 @@ pub async fn process_request(
             create_card(&client, term, definition).await?;
         }
         "list" => list_cards(&client).await?,
+        "start" => learn(&client)?,
         _ => return Err("Unknown command".into()),
     }
     Ok(())
 }
 
+fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
+    loop {
+        // get the card
+        match get_next_card(client) {
+            Some(card) =>  {
+                println!("Term: {}", card.term);
+                update_card(&client)?;
+            },
+            None => break
+        }
+    }
+    Ok(())
+}
+
+/// Gets the next card to learn
+fn get_next_card(client: &reqwest::Client) -> Option<Card> {
+    todo!()
+}
+
+/// Tells the server how the card should be updated 
+fn update_card(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
+    todo!()
+}
+
+
 /// Create a new card in the database
-pub async fn create_card(
+async fn create_card(
     client: &reqwest::Client,
     term: String,
     definition: String,
@@ -48,7 +74,7 @@ pub async fn create_card(
 }
 
 /// Get all of the cards in the database
-pub async fn list_cards(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
+async fn list_cards(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
     // construct the url and send the request
     let url = format!("{}/list_all_cards", URL); // Ensure the endpoint matches the server's route
     let response = client.get(&url).send().await?;
