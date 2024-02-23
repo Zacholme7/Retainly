@@ -33,11 +33,17 @@ fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         // get the card
         match get_next_card(client) {
+            // we have an other card left in the day
             Some(card) =>  {
                 println!("Term: {}", card.term);
                 update_card(&client)?;
             },
-            None => break
+            // there are no more cards left in the day
+            None => {
+                println!("day has ended");
+                // signal if we want to start a new day or not
+                break
+            }
         }
     }
     Ok(())

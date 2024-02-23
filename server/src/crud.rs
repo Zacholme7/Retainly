@@ -23,7 +23,7 @@ async fn insert_card(conn: web::Data<Arc<Mutex<Connection>>>, card: web::Json<Ca
 #[get("/get_next_card")]
 async fn get_next_card(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpResponse {
     // this will call a function on the spaced repeition struct that will return the card that we
-    let state = state.lock().unwrap();
+    let mut state = state.lock().unwrap();
 
     // If there is a card left in this review session, send it to the client.
     // Othwise, send back a not found meaning we do not have any others
