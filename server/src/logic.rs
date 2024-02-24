@@ -1,15 +1,16 @@
 use chrono::{DateTime, Duration, Utc};
 use common::{Card, Outcome};
+use crate::db::*;
 
 /// Consuming iterator for the current "day"
 struct CardIterator {
-    iter: Box<dyn Iterator<Item = Card>>
+    iter: Box<dyn Iterator<Item = Card>>,
 }
 
 impl CardIterator {
     /// Construct the iterator
     fn new(iter: Box<dyn Iterator<Item = Card>>) -> Self {
-        CardIterator {iter}
+        CardIterator { iter }
     }
 
     /// Consume the next card for the day
@@ -32,7 +33,6 @@ pub struct SpacedRepetition {
     levels: Level,
 }
 
-
 impl SpacedRepetition {
     /// Construct a new instance
     pub fn new() -> Self {
@@ -43,13 +43,13 @@ impl SpacedRepetition {
             review_schedule: ReviewSchedule::generate_schedule(),
             card_iter: CardIterator::new(Box::new(initial_cards.into_iter())),
             day_in_progress: false,
-            levels: Level::default()
+            levels: Level::default(),
         }
     }
 
     /// Get the levels that need to be reviewed on this day
-    pub fn levels_to_review(&self) -> Day {
-        self.review_schedule.schedule[self.day % self.review_schedule.schedule.len()]
+    fn levels_to_review(&self) -> Day {
+        self.review_schedule.schedule[self.day % self.review_schedule.schedule.len()].clone()
     }
 
     /// Get the next card in the current review day
@@ -82,33 +82,44 @@ impl SpacedRepetition {
     }
 
     /// Create a vector of all the cards that need to be reviewed today
-    fn get_cards_for_today(&mut self, levels_to_review: &Day) -> Vec<Card>{
-        // extract the days we need
-        // take all of the cards out of the levels for today and put them into a vector and return
-        // the vector
+    fn get_cards_for_today(&mut self, levels_to_review: &Day) -> Vec<Card> {
         let mut cards = Vec::new();
 
-        // move the cards from review level 1
-        for level_index in levels_to_review.levels {
-            let mut level_cards = match level_index {
-                1 => self.levels.level_one,
-                2 => self.levels.level_two,
-                3 => self.levels.level_three,
-                4 => self.levels.level_four,
-                5 => self.levels.level_five,
-                6 => self.levels.level_six,
-                7 => self.levels.level_seven,
+        // Iterate over the levels that need to be reviewed today
+        for &level_index in &levels_to_review.levels {
+            // Use a reference to directly modify the vector in the Level struct
+            let level_cards = match level_index {
+                1 => &mut self.levels.level_one,
+                2 => &mut self.levels.level_two,
+                3 => &mut self.levels.level_three,
+                4 => &mut self.levels.level_four,
+                5 => &mut self.levels.level_five,
+                6 => &mut self.levels.level_six,
+                7 => &mut self.levels.level_seven,
+                _ => panic!("Invalid level index"),
             };
-            cards.append(&mut level_cards);
+
+            // Move all cards from this level to the cards vector
+            cards.append(level_cards);
+            // Since we've moved all cards to the 'cards' vector, the level is now empty
         }
         cards
     }
 
     /// Update a card based on our proficiency of it
-    pub fn update_card(&self, outcome: Outcome) {
+    pub fn update_card(&self, outcome: Outcome, card: Card) -> Result<(), Box<dyn std::error::Error>> {
+        // get the current level
+
+        // check the outcome
         match outcome {
-            YES => todo!(),
-            NO => todo!(),
+            YES => {
+                // move to next level
+                todo!()
+            }
+            NO => {
+                todo!()
+                // move back to level one
+            }
         }
     }
 }
@@ -140,52 +151,21 @@ impl Default for Level {
 }
 
 /// The levels that need to be reviwed on a currenty day
+#[derive(Clone)]
 struct Day {
     levels: Vec<usize>,
 }
 
-/// The review schedule 
+/// The review schedule
 struct ReviewSchedule {
-    schedule: Vec<Day>
+    schedule: Vec<Day>,
 }
 
 impl ReviewSchedule {
     /// Generate the review schedule
     pub fn generate_schedule() -> Self {
         Self {
-            schedule: {vec![
-              Day {levels: vec![2, 1]},
-              Day {levels: vec![3, 1]}
-            ]}
+            schedule: { vec![Day { levels: vec![2, 1] }, Day { levels: vec![3, 1] }] },
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

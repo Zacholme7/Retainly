@@ -6,7 +6,7 @@ pub struct Card {
     pub term: String,
     pub definition: String,
     pub id: Option<i32>,
-    pub current_level: usize,
+    pub current_level: i64,
 }
 
 impl Card {

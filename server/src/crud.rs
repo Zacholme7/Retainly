@@ -1,15 +1,17 @@
-use actix_web::{web, put, get, post, HttpResponse};
-use std::sync::{Arc, Mutex};
+use actix_web::{get, post, put, web, HttpResponse};
 use rusqlite::Connection;
+use std::sync::{Arc, Mutex};
 
-
-use common::Card;
 use crate::db::*;
 use crate::logic::*;
+use common::{Card, Outcome};
 
 /// Insert a new card into the database
 #[post("/insert_card")]
-async fn insert_card(conn: web::Data<Arc<Mutex<Connection>>>, card: web::Json<Card>) -> HttpResponse {
+async fn insert_card(
+    conn: web::Data<Arc<Mutex<Connection>>>,
+    card: web::Json<Card>,
+) -> HttpResponse {
     // acquire the connection
     let conn = conn.lock().unwrap();
 
@@ -29,16 +31,45 @@ async fn get_next_card(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpRe
     // Othwise, send back a not found meaning we do not have any others
     match state.get_next_card() {
         Some(card) => HttpResponse::Ok().json(card),
-        None => HttpResponse::NotFound().finish()
+        None => HttpResponse::NotFound().finish(),
     }
 }
 
-#[put("/update_card/{outcome}")]
-async fn update_card(conn: web::Data<Arc<Mutex<Connection>>>) -> HttpResponse {
-    todo!()
+#[put("/update_card/{outcome}:{id}")]
+async fn update_card(
+    conn: web::Data<Arc<Mutex<Connection>>>,
+    path: web::Path<(String, i64)>,
+) -> HttpResponse {
+    // acquire the connection
+    // extract the outcome and id from the path
+    let (outcome, id) = path.into_inner();
+
+    // convert outcome to Outcome structure
+    let outcome = if outcome == "1" { Outcome::RIGHT } else { Outcome::WRONG };
+
+    // acquire the connection
+    let conn = conn.lock().unwrap();
+
+    // get the card
+    let card = match get_card(&conn, id) {
+        Ok(card) => card,
+        Err(_) => return HttpResponse::NotFound().finish(),
+    };
+
+    // update card level based on outcome
+    let res = match outcome {
+        Outcome::RIGHT => move_card_up_level(&conn, id),
+        Outcome::WRONG => move_card_to_level_one(&conn, id)
+    };
+
+
+    // update the card in the spaced repeition
+    // get access to the core
+    //core.update_card(outcome, card);
+
+    HttpResponse::Ok().finish()
 }
 
- 
 /// Retrieve all of the cards in the database
 #[get("/list_all_cards")]
 async fn list_all_cards(conn: web::Data<Arc<Mutex<Connection>>>) -> HttpResponse {
@@ -51,4 +82,3 @@ async fn list_all_cards(conn: web::Data<Arc<Mutex<Connection>>>) -> HttpResponse
         Err(_) => HttpResponse::InternalServerError().body("Failed to retrieve all of the cards"),
     }
 }
-

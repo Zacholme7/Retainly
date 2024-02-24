@@ -18,12 +18,13 @@ async fn main() -> std::io::Result<()> {
     let conn = Arc::new(Mutex::new(conn));
 
     // create the core of the application
-    let core = SpacedRepetition {day : 0};
+    let core = Arc::new(Mutex::new(SpacedRepetition::new()));
 
     // start the http server
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(conn.clone()))
+            .app_data(web::Data::new(core.clone()))
             .service(insert_card)
             .service(list_all_cards)
     })
