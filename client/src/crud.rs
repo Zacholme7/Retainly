@@ -23,20 +23,24 @@ pub async fn process_request(
             create_card(&client, term, definition).await?;
         }
         "list" => list_cards(&client).await?,
-        "start" => learn(&client)?,
+        "start" => learn(&client).await?,
         _ => return Err("Unknown command".into()),
     }
     Ok(())
 }
 
-fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
+async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         // get the card
-        match get_next_card(client) {
+        match get_next_card(client).await? {
             // we have an other card left in the day
             Some(card) =>  {
-                println!("Term: {}", card.term);
-                update_card(&client)?;
+                println!("Term: {}, Def {}", card.term, card.definition);
+                // derermine how we answered it
+                print!("Success? Y/N:");
+                io::stdout().flush().unwrap();
+                let outcome = read_trimmed_line();
+                //update_card(&client)?;
             },
             // there are no more cards left in the day
             None => {
@@ -50,8 +54,19 @@ fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
 }
 
 /// Gets the next card to learn
-fn get_next_card(client: &reqwest::Client) -> Option<Card> {
-    todo!()
+async fn get_next_card(client: &reqwest::Client) -> Result<Option<Card>, Box<dyn std::error::Error>> {
+    let url = format!("{}/get_next_card", URL);
+    let response = client.get(url).send().await?;
+
+    match response.status() {
+        reqwest::StatusCode::OK => {
+            let card = response.json::<Card>().await?;
+            Ok(Some(card))
+        }
+        reqwest::StatusCode::NOT_FOUND => Ok(None),
+        _ => Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Failed to fetch the next card"))),
+    }
+
 }
 
 /// Tells the server how the card should be updated 

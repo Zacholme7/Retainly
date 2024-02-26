@@ -10,10 +10,16 @@ use common::{Card, Outcome};
 #[post("/insert_card")]
 async fn insert_card(
     conn: web::Data<Arc<Mutex<Connection>>>,
+    state: web::Data<Arc<Mutex<SpacedRepetition>>>,
     card: web::Json<Card>,
 ) -> HttpResponse {
     // acquire the connection
     let conn = conn.lock().unwrap();
+    println!("in insert card");
+
+    // insert the card into the core
+    let mut state = state.lock().unwrap();
+    state.insert_card_into_level(card.clone());
 
     // insert the card into the database
     match insert_card_into_db(&conn, &card) {
@@ -25,6 +31,7 @@ async fn insert_card(
 #[get("/get_next_card")]
 async fn get_next_card(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpResponse {
     // this will call a function on the spaced repeition struct that will return the card that we
+    println!("in get next card in crus");
     let mut state = state.lock().unwrap();
 
     // If there is a card left in this review session, send it to the client.

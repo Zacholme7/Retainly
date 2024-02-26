@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 /// Flashcards
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Card {
     pub term: String,
     pub definition: String,
-    pub id: Option<i32>,
+    pub id: i32,
     pub current_level: i64,
 }
 
@@ -14,13 +14,9 @@ impl Card {
         Self {
             term,
             definition,
-            id: None,
+            id: -1,
             current_level: 1,
         }
-    }
-
-    pub fn say_hello() {
-        println!("hello");
     }
 }
 
