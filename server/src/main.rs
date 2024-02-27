@@ -21,6 +21,9 @@ async fn main() -> std::io::Result<()> {
     // create the core of the application
     let core = Arc::new(Mutex::new(SpacedRepetition::new()));
 
+    // update core to contain the state of the database
+    core.lock().unwrap().initial_level_update(&conn.lock().unwrap());
+
     // start the http server
     HttpServer::new(move || {
         App::new()

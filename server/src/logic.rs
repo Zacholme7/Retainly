@@ -1,6 +1,6 @@
 use crate::db::*;
-use chrono::{DateTime, Duration, Utc};
-use common::{Card, Outcome};
+use common::Card;
+use rusqlite::Connection;
 
 /// Consuming iterator for the current "day"
 struct CardIterator {
@@ -45,6 +45,24 @@ impl SpacedRepetition {
             card_iter: CardIterator::new(Box::new(initial_cards.into_iter())),
             day_in_progress: false,
             levels: Level::default(),
+        }
+    }
+
+    // Upon construction, update the levels with the current cards we are studying
+    pub fn initial_level_update(&mut self, conn: &Connection) {
+        // upon fresh construction, read all cards from database into correct levels
+        let all_cards = query_cards(&conn).unwrap();
+        for curr_card in all_cards {
+            match &curr_card.current_level {
+                1 => self.levels.level_one.push(curr_card),
+                2 => self.levels.level_two.push(curr_card),
+                3 => self.levels.level_three.push(curr_card),
+                4 => self.levels.level_four.push(curr_card),
+                5 => self.levels.level_five.push(curr_card),
+                6 => self.levels.level_six.push(curr_card),
+                7 => self.levels.level_seven.push(curr_card),
+                _ => panic!("invalid level"),
+            }
         }
     }
 
