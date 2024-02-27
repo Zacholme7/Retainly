@@ -4,6 +4,13 @@ use std::io::{self, Write};
 /// URL of the webserver
 const URL: &str = "http://127.0.0.1:8080";
 
+
+/// Output general information about the state of learning
+pub async fn output_general_information() {
+
+}
+
+
 /// Process request
 pub async fn process_request(
     input: String,

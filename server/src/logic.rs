@@ -41,12 +41,17 @@ impl SpacedRepetition {
 
 
         Self {
-            day: 1,
+            day: 0,
             review_schedule: ReviewSchedule::generate_schedule(),
             card_iter: CardIterator::new(Box::new(initial_cards.into_iter())),
             day_in_progress: false,
             levels: Level::default(),
         }
+    }
+
+    /// Gets general information about the state of learning
+    fn get_general_information(&self)  {
+        todo!()
     }
 
 
@@ -55,6 +60,7 @@ impl SpacedRepetition {
         self.review_schedule.schedule[self.day % self.review_schedule.schedule.len()].clone()
     }
 
+    /// Move the cards level in the state based on the outcome
     pub fn move_card_level_in_state(&mut self, outcome: &Outcome, card: Card) -> Result<(), Box<dyn std::error::Error>> {
         match card.current_level {
             1 => self.levels.level_one.push(card),
@@ -65,11 +71,8 @@ impl SpacedRepetition {
             6 => self.levels.level_six.push(card),
             7 => self.levels.level_seven.push(card),
             _ => panic!("invalid level"),
-
         }
-
         Ok(())
-
     }
 
     /// Get the next card in the current review day
@@ -86,7 +89,9 @@ impl SpacedRepetition {
         match self.card_iter.next() {
             Some(card) => Some(card),
             None => {
+                // set the day to false and increment the day
                 self.day_in_progress = false;
+                self.day = self.day + 1;
                 None
             }
         }

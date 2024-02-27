@@ -6,6 +6,7 @@ use crate::db::*;
 use crate::logic::*;
 use common::{Card, Outcome};
 
+
 /// Insert a new card into the database
 #[post("/insert_card")]
 async fn insert_card(

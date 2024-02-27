@@ -25,3 +25,5 @@ pub enum Outcome {
     RIGHT,
     WRONG,
 }
+
+// General information about the state of the application
