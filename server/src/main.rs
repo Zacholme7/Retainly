@@ -33,6 +33,7 @@ async fn main() -> std::io::Result<()> {
             .service(list_all_cards)
             .service(get_next_card)
             .service(update_card)
+            .service(get_general_info)
     })
     .bind("127.0.0.1:8080")?
     .run()

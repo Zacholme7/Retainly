@@ -1,4 +1,4 @@
-use common::Card;
+use common::{Card, GeneralInfo};
 use std::io::{self, Write};
 
 /// URL of the webserver
@@ -35,6 +35,8 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
         match get_next_card(client).await? {
             // we have an other card left in the day
             Some(card) => {
+                let info = get_general_information(&client).await?;
+                println!("Day: {}, To Review: {:?}", info.day, info.levels);
                 println!("Term: {}", card.term);
                 // derermine how we answered it
                 print!("Success? Y/N:");
@@ -52,6 +54,13 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
         }
     }
     Ok(())
+}
+
+/// Gets application information from the server
+pub async fn get_general_information(client: &reqwest::Client) -> Result<GeneralInfo, Box<dyn std::error::Error>> {
+    let url = format!("{}/general_info", URL);
+    let response = client.get(url).send().await?;
+    Ok(response.json::<GeneralInfo>().await?)
 }
 
 /// Gets the next card to learn

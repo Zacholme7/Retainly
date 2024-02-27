@@ -27,3 +27,8 @@ pub enum Outcome {
 }
 
 // General information about the state of the application
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct GeneralInfo {
+    pub day: usize,
+    pub levels: Vec<usize>,
+}

@@ -1,5 +1,5 @@
 use crate::db::*;
-use common::Card;
+use common::{Card, GeneralInfo};
 use rusqlite::Connection;
 
 /// Consuming iterator for the current "day"
@@ -47,6 +47,16 @@ impl SpacedRepetition {
             levels: Level::default(),
         }
     }
+
+    /// General function to get status information on the state of the application
+    pub fn get_general_information(&self) -> GeneralInfo {
+        // just get the current day and the levels that we have to review for this day
+        GeneralInfo {
+            day: self.day + 1, 
+            levels: self.levels_to_review().levels 
+        }
+    }
+
 
     // Upon construction, update the levels with the current cards we are studying
     pub fn initial_level_update(&mut self, conn: &Connection) {

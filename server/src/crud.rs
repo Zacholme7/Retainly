@@ -4,7 +4,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::db::*;
 use crate::logic::*;
-use common::{Card, Outcome};
+use common::{Card, Outcome, GeneralInfo};
 
 /// Insert a new card into the database
 #[post("/insert_card")]
@@ -96,3 +96,53 @@ async fn list_all_cards(conn: web::Data<Arc<Mutex<Connection>>>) -> HttpResponse
         Err(_) => HttpResponse::InternalServerError().body("Failed to retrieve all of the cards"),
     }
 }
+
+/// Retrieves general information about the state of the application
+#[get("/general_info")]
+async fn get_general_info(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpResponse {
+    // acquire the state
+    let state = state.lock().unwrap();
+
+    // get the information
+    let general_information = state.get_general_information();
+
+    // send response
+    HttpResponse::Ok().json(general_information)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
