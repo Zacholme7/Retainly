@@ -1,7 +1,6 @@
 use common::{Card, Outcome};
 use rusqlite::Connection;
 
-
 /// Create a table in the database to hold the cards
 pub fn create_table(conn: &Connection) -> Result<(), Box<dyn std::error::Error>> {
     conn.execute(
@@ -66,12 +65,6 @@ pub fn get_card(conn: &Connection, id: i64) -> Result<Card, Box<dyn std::error::
     .map_err(|e| e.into())
 }
 
-/// Remove a card from the database by ID
-pub fn remove_card_from_db(conn: &Connection, id: i64) -> Result<(), Box<dyn std::error::Error>> {
-    conn.execute("DELETE FROM card WHERE id = ?1", [id])?;
-    Ok(())
-}
-
 /// Move a card up a level
 pub fn move_card_level_in_db(
     conn: &Connection,
@@ -90,4 +83,3 @@ pub fn move_card_level_in_db(
     }
     Ok(())
 }
-

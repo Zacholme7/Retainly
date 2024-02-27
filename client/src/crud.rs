@@ -4,19 +4,11 @@ use std::io::{self, Write};
 /// URL of the webserver
 const URL: &str = "http://127.0.0.1:8080";
 
-
-/// Output general information about the state of learning
-pub async fn output_general_information() {
-
-}
-
-
 /// Process request
 pub async fn process_request(
     input: String,
     client: &reqwest::Client,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    println!("{}", input);
     match input.as_str().trim() {
         "add" => {
             print!("Enter the term: ");
@@ -36,13 +28,14 @@ pub async fn process_request(
     Ok(())
 }
 
+/// Start the learning for the day
 async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
     loop {
         // get the card
         match get_next_card(client).await? {
             // we have an other card left in the day
             Some(card) => {
-                println!("Term: {}, Def {}", card.term, card.definition);
+                println!("Term: {}", card.term);
                 // derermine how we answered it
                 print!("Success? Y/N:");
                 io::stdout().flush().unwrap();
@@ -54,7 +47,6 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
             // there are no more cards left in the day
             None => {
                 println!("day has ended");
-                // signal if we want to start a new day or not
                 break;
             }
         }
@@ -136,6 +128,8 @@ async fn list_cards(client: &reqwest::Client) -> Result<(), Box<dyn std::error::
     }
 }
 
+
+// Helper function to read user input
 fn read_trimmed_line() -> String {
     let mut input = String::new();
     let _ = io::stdin().read_line(&mut input);

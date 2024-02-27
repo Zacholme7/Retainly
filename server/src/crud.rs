@@ -6,7 +6,6 @@ use crate::db::*;
 use crate::logic::*;
 use common::{Card, Outcome};
 
-
 /// Insert a new card into the database
 #[post("/insert_card")]
 async fn insert_card(
@@ -16,7 +15,6 @@ async fn insert_card(
 ) -> HttpResponse {
     // acquire the connection
     let conn = conn.lock().unwrap();
-    println!("in insert card");
 
     // insert the card into the database
     let id = match insert_card_into_db(&conn, &card) {
@@ -37,7 +35,6 @@ async fn insert_card(
 #[get("/get_next_card")]
 async fn get_next_card(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpResponse {
     // this will call a function on the spaced repeition struct that will return the card that we
-    println!("in get next card in crus");
     let mut state = state.lock().unwrap();
 
     // If there is a card left in this review session, send it to the client.
@@ -70,7 +67,6 @@ async fn update_card(
 
     // update the card level in the database
     if let Err(_) = move_card_level_in_db(&conn, &outcome, id) {
-        println!("faild to move card in db");
         return HttpResponse::InternalServerError().body("Failed to move card in db");
     }
 
@@ -80,8 +76,7 @@ async fn update_card(
 
     // update the card level in the state
     let mut state = state.lock().unwrap();
-    if let Err(_) = state.move_card_level_in_state(&outcome, card) {
-        println!("faild to move card in levels");
+    if let Err(_) = state.move_card_level_in_state(card) {
         return HttpResponse::InternalServerError().body("Failed to move card in state levels");
     }
 

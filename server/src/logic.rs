@@ -39,7 +39,6 @@ impl SpacedRepetition {
         // placeholder for initial card state of the iterator
         let initial_cards: Vec<Card> = Vec::new();
 
-
         Self {
             day: 0,
             review_schedule: ReviewSchedule::generate_schedule(),
@@ -49,19 +48,16 @@ impl SpacedRepetition {
         }
     }
 
-    /// Gets general information about the state of learning
-    fn get_general_information(&self)  {
-        todo!()
-    }
-
-
     /// Get the levels that need to be reviewed on this day
     fn levels_to_review(&self) -> Day {
         self.review_schedule.schedule[self.day % self.review_schedule.schedule.len()].clone()
     }
 
     /// Move the cards level in the state based on the outcome
-    pub fn move_card_level_in_state(&mut self, outcome: &Outcome, card: Card) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn move_card_level_in_state(
+        &mut self,
+        card: Card,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         match card.current_level {
             1 => self.levels.level_one.push(card),
             2 => self.levels.level_two.push(card),
@@ -78,7 +74,6 @@ impl SpacedRepetition {
     /// Get the next card in the current review day
     pub fn get_next_card(&mut self) -> Option<Card> {
         // if the day is not currently in progress, we want to start it
-        println!("in get next card");
         if self.day_in_progress == false {
             // seup a card iterator and set the day to in progress
             self.init_day_cards();
@@ -100,7 +95,6 @@ impl SpacedRepetition {
     /// At the start of a new day, setup all of the cards that we need to review
     fn init_day_cards(&mut self) {
         // get the levels that we want to review for the day from the review schedule
-        println!("in init day cards");
         let levels_for_today = self.levels_to_review();
 
         // construct the iterator for the days cards
@@ -111,8 +105,6 @@ impl SpacedRepetition {
     /// Create a vector of all the cards that need to be reviewed today
     fn get_cards_for_today(&mut self, levels_to_review: &Day) -> Vec<Card> {
         let mut cards = Vec::new();
-
-        println!("{:?}", self.levels);
 
         // Iterate over the levels that need to be reviewed today
         for &level_index in &levels_to_review.levels {
@@ -132,29 +124,7 @@ impl SpacedRepetition {
             cards.append(level_cards);
             // Since we've moved all cards to the 'cards' vector, the level is now empty
         }
-        println!("{:?}", cards);
         cards
-    }
-
-    /// Update a card based on our proficiency of it
-    pub fn update_card(
-        &self,
-        outcome: Outcome,
-        card: Card,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        // get the current level
-
-        // check the outcome
-        match outcome {
-            YES => {
-                // move to next level
-                todo!()
-            }
-            NO => {
-                todo!()
-                // move back to level one
-            }
-        }
     }
 
     /// Inserts a card into level one

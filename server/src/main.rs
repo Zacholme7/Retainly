@@ -15,6 +15,7 @@ async fn main() -> std::io::Result<()> {
     let conn = Connection::open("cards.db").unwrap();
     create_table(&conn).unwrap();
 
+    // database connection to be passed around
     let conn = Arc::new(Mutex::new(conn));
 
     // create the core of the application
