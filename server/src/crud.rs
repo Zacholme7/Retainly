@@ -17,15 +17,20 @@ async fn insert_card(
     let conn = conn.lock().unwrap();
     println!("in insert card");
 
-    // insert the card into the core
+    // insert the card into the database
+    let id = match insert_card_into_db(&conn, &card) {
+        Ok(id) => id,
+        Err(_) => return HttpResponse::InternalServerError().body("Failed to create the card"),
+    };
+
+    // get the newly inserted card from the database
+    let card = get_card(&conn, id).unwrap();
+
+    // insert the card into the state
     let mut state = state.lock().unwrap();
     state.insert_card_into_level(card.clone());
 
-    // insert the card into the database
-    match insert_card_into_db(&conn, &card) {
-        Ok(_) => HttpResponse::Ok().finish(),
-        Err(_) => HttpResponse::InternalServerError().body("Failed to create the card"),
-    }
+    HttpResponse::Ok().finish()
 }
 
 #[get("/get_next_card")]
@@ -45,6 +50,7 @@ async fn get_next_card(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpRe
 #[put("/update_card/{outcome}:{id}")]
 async fn update_card(
     conn: web::Data<Arc<Mutex<Connection>>>,
+    state: web::Data<Arc<Mutex<SpacedRepetition>>>,
     path: web::Path<(String, i64)>,
 ) -> HttpResponse {
     // acquire the connection
@@ -52,28 +58,33 @@ async fn update_card(
     let (outcome, id) = path.into_inner();
 
     // convert outcome to Outcome structure
-    let outcome = if outcome == "1" { Outcome::RIGHT } else { Outcome::WRONG };
+    let outcome = if outcome == "1" {
+        Outcome::RIGHT
+    } else {
+        Outcome::WRONG
+    };
 
     // acquire the connection
     let conn = conn.lock().unwrap();
 
-    // get the card
-    let card = match get_card(&conn, id) {
-        Ok(card) => card,
-        Err(_) => return HttpResponse::NotFound().finish(),
-    };
+    // update the card level in the database
+    if let Err(_) = move_card_level_in_db(&conn, &outcome, id) {
+        println!("faild to move card in db");
+        return HttpResponse::InternalServerError().body("Failed to move card in db");
+    }
 
-    // update card level based on outcome
-    let res = match outcome {
-        Outcome::RIGHT => move_card_up_level(&conn, id),
-        Outcome::WRONG => move_card_to_level_one(&conn, id)
-    };
+    // get the newly updated card
+    let card = get_card(&conn, id).unwrap();
 
 
-    // update the card in the spaced repeition
-    // get access to the core
-    //core.update_card(outcome, card);
+    // update the card level in the state
+    let mut state = state.lock().unwrap();
+    if let Err(_) = state.move_card_level_in_state(&outcome, card) {
+        println!("faild to move card in levels");
+        return HttpResponse::InternalServerError().body("Failed to move card in state levels");
+    }
 
+    // finished updating, return OK
     HttpResponse::Ok().finish()
 }
 

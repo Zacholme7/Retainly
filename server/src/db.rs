@@ -1,5 +1,6 @@
-use common::Card;
+use common::{Card, Outcome};
 use rusqlite::Connection;
+
 
 /// Create a table in the database to hold the cards
 pub fn create_table(conn: &Connection) -> Result<(), Box<dyn std::error::Error>> {
@@ -19,7 +20,7 @@ pub fn create_table(conn: &Connection) -> Result<(), Box<dyn std::error::Error>>
 pub fn insert_card_into_db(
     conn: &Connection,
     card: &Card,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<i64, Box<dyn std::error::Error>> {
     conn.execute(
         "INSERT INTO card (term, definition, level) VALUES (?1, ?2, ?3)",
         &[
@@ -28,7 +29,7 @@ pub fn insert_card_into_db(
             &card.current_level.to_string(),
         ],
     )?;
-    Ok(())
+    Ok(conn.last_insert_rowid())
 }
 
 /// Get a list of all the cards in the database
@@ -72,16 +73,21 @@ pub fn remove_card_from_db(conn: &Connection, id: i64) -> Result<(), Box<dyn std
 }
 
 /// Move a card up a level
-pub fn move_card_up_level(conn: &Connection, id: i64) -> Result<(), Box<dyn std::error::Error>> {
-    conn.execute("UPDATE card SET level = level + 1 WHERE id = ?1", [id])?;
+pub fn move_card_level_in_db(
+    conn: &Connection,
+    outcome: &Outcome,
+    id: i64,
+) -> Result<(), Box<dyn std::error::Error>> {
+    match outcome {
+        Outcome::RIGHT => {
+            // if we are right, we just want to move it up a level
+            conn.execute("UPDATE card SET level = level + 1 WHERE id = ?1", [id])?;
+        }
+        Outcome::WRONG => {
+            // if we are wrong, we want to move it back to level 1
+            conn.execute("UPDATE card SET level = 1 WHERE id = ?1", [id])?;
+        }
+    }
     Ok(())
 }
 
-/// Move card back to level one
-pub fn move_card_to_level_one(
-    conn: &Connection,
-    id: i64,
-) -> Result<(), Box<dyn std::error::Error>> {
-    conn.execute("UPDATE card SET level = 1 WHERE id = ?1", [id])?;
-    Ok(())
-}

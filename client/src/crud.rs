@@ -34,19 +34,21 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
         // get the card
         match get_next_card(client).await? {
             // we have an other card left in the day
-            Some(card) =>  {
+            Some(card) => {
                 println!("Term: {}, Def {}", card.term, card.definition);
                 // derermine how we answered it
                 print!("Success? Y/N:");
                 io::stdout().flush().unwrap();
                 let outcome = read_trimmed_line();
-                //update_card(&client)?;
-            },
+
+                // update the card in the server with the outcome
+                update_card(&client, card, outcome).await?;
+            }
             // there are no more cards left in the day
             None => {
                 println!("day has ended");
                 // signal if we want to start a new day or not
-                break
+                break;
             }
         }
     }
@@ -54,7 +56,9 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
 }
 
 /// Gets the next card to learn
-async fn get_next_card(client: &reqwest::Client) -> Result<Option<Card>, Box<dyn std::error::Error>> {
+async fn get_next_card(
+    client: &reqwest::Client,
+) -> Result<Option<Card>, Box<dyn std::error::Error>> {
     let url = format!("{}/get_next_card", URL);
     let response = client.get(url).send().await?;
 
@@ -64,16 +68,31 @@ async fn get_next_card(client: &reqwest::Client) -> Result<Option<Card>, Box<dyn
             Ok(Some(card))
         }
         reqwest::StatusCode::NOT_FOUND => Ok(None),
-        _ => Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Failed to fetch the next card"))),
+        _ => Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Failed to fetch the next card",
+        ))),
     }
-
 }
 
-/// Tells the server how the card should be updated 
-fn update_card(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
-    todo!()
-}
+/// Tells the server how the card should be updated
+async fn update_card(
+    client: &reqwest::Client,
+    card: Card,
+    outcome: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let url = format!("{}/update_card/{}:{}", URL, outcome, card.id);
 
+    let response = client.put(url).send().await?;
+
+    match response.status() {
+        reqwest::StatusCode::OK => Ok(()),
+        _ => Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            "Failed to update the card",
+        ))),
+    }
+}
 
 /// Create a new card in the database
 async fn create_card(

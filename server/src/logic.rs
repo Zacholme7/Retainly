@@ -39,7 +39,6 @@ impl SpacedRepetition {
         // placeholder for initial card state of the iterator
         let initial_cards: Vec<Card> = Vec::new();
 
-        // read all the cards from the database and insert them into the correct level
 
         Self {
             day: 1,
@@ -50,9 +49,27 @@ impl SpacedRepetition {
         }
     }
 
+
     /// Get the levels that need to be reviewed on this day
     fn levels_to_review(&self) -> Day {
         self.review_schedule.schedule[self.day % self.review_schedule.schedule.len()].clone()
+    }
+
+    pub fn move_card_level_in_state(&mut self, outcome: &Outcome, card: Card) -> Result<(), Box<dyn std::error::Error>> {
+        match card.current_level {
+            1 => self.levels.level_one.push(card),
+            2 => self.levels.level_two.push(card),
+            3 => self.levels.level_three.push(card),
+            4 => self.levels.level_four.push(card),
+            5 => self.levels.level_five.push(card),
+            6 => self.levels.level_six.push(card),
+            7 => self.levels.level_seven.push(card),
+            _ => panic!("invalid level"),
+
+        }
+
+        Ok(())
+
     }
 
     /// Get the next card in the current review day
