@@ -71,7 +71,9 @@ impl SpacedRepetition {
                 5 => self.levels.level_five.push(curr_card),
                 6 => self.levels.level_six.push(curr_card),
                 7 => self.levels.level_seven.push(curr_card),
-                _ => panic!("invalid level"),
+                8 => self.levels.learned.push(curr_card),
+                _ => panic!("invalid level index"),
+
             }
         }
     }
@@ -94,7 +96,8 @@ impl SpacedRepetition {
             5 => self.levels.level_five.push(card),
             6 => self.levels.level_six.push(card),
             7 => self.levels.level_seven.push(card),
-            _ => panic!("invalid level"),
+            8 => self.levels.learned.push(card),
+            _ => panic!("Invalid level index"),
         }
         Ok(())
     }
@@ -171,6 +174,7 @@ pub struct Level {
     pub level_five: Vec<Card>,
     pub level_six: Vec<Card>,
     pub level_seven: Vec<Card>,
+    pub learned: Vec<Card>,
 }
 
 // Default constructor for initial instantiation
@@ -184,6 +188,7 @@ impl Default for Level {
             level_five: Vec::new(),
             level_six: Vec::new(),
             level_seven: Vec::new(),
+            learned: Vec::new(),
         }
     }
 }

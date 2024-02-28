@@ -56,7 +56,7 @@ async fn update_card(
     let (outcome, id) = path.into_inner();
 
     // convert outcome to Outcome structure
-    let outcome = if outcome == "1" {
+    let outcome = if outcome == "y" {
         Outcome::RIGHT
     } else {
         Outcome::WRONG

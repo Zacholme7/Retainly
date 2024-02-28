@@ -35,13 +35,19 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
         match get_next_card(client).await? {
             // we have an other card left in the day
             Some(card) => {
-                let info = get_general_information(&client).await?;
-                println!("Day: {}, To Review: {:?}", info.day, info.levels);
                 println!("Term: {}", card.term);
                 // derermine how we answered it
-                print!("Success? Y/N:");
+                print!("Outcome? show/y/n: ");
+
                 io::stdout().flush().unwrap();
-                let outcome = read_trimmed_line();
+                let mut outcome = read_trimmed_line();
+
+                if outcome == "show" {
+                    println!("Definition: {}", card.definition);
+                    print!("Outcome? y/n: ");
+                    io::stdout().flush().unwrap();
+                    outcome = read_trimmed_line();
+                } 
 
                 // update the card in the server with the outcome
                 update_card(&client, card, outcome).await?;
