@@ -1,5 +1,6 @@
-use crud::{get_general_information, process_request};
+use crud::process_request;
 use std::io::{self, Write};
+use common::{URL, GeneralInfo};
 mod crud;
 
 #[tokio::main]
@@ -9,8 +10,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     loop {
         // Clear the screen
-        print!("\x1B[2J\x1B[1;1H");
-        io::stdout().flush().unwrap();
+        //print!("\x1B[2J\x1B[1;1H");
+        //io::stdout().flush().unwrap();
 
         print_general_info(&client).await;
         print!("> ");
@@ -30,7 +31,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 // prints general information about the state of the application
 async fn print_general_info(client: &reqwest::Client) {
-    let info = get_general_information(&client).await.unwrap();
+    let url = format!("{}/general_info", URL);
+    let response = client.get(url).send().await;
+    let info = response.unwrap().json::<GeneralInfo>().await.unwrap();
     println!("------------------------------");
     println!("Day: {}, To Review: {:?}", info.day, info.levels);
     println!("------------------------------");

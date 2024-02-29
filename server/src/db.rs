@@ -51,6 +51,20 @@ pub fn query_cards(conn: &Connection) -> Result<Vec<Card>, Box<dyn std::error::E
     Ok(cards)
 }
 
+/// Modify card in the database
+pub fn modify_card_in_db(
+    conn: &Connection,
+    id: String,
+    term: String,
+    definition: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    conn.execute(
+        "UPDATE card SET term = ?1, definition = ?2 WHERE id = ?3",
+        &[&term, &definition, &id],
+    )?;
+    Ok(())
+}
+
 /// Get card by ID
 pub fn get_card(conn: &Connection, id: i64) -> Result<Card, Box<dyn std::error::Error>> {
     let mut stmt = conn.prepare("SELECT id, term, definition, level FROM card WHERE id = ?1")?;

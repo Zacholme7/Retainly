@@ -45,6 +45,48 @@ async fn get_next_card(state: web::Data<Arc<Mutex<SpacedRepetition>>>) -> HttpRe
     }
 }
 
+#[put("/modify_card/{id}:{term}:{definition}")]
+async fn modify_card(
+    conn: web::Data<Arc<Mutex<Connection>>>,
+    state: web::Data<Arc<Mutex<SpacedRepetition>>>,
+    path: web::Path<(i64, String, String)>,
+) -> HttpResponse {
+    // extract the information
+    let (id, term, definition) = path.into_inner();
+
+    let conn = conn.lock().unwrap();
+
+    // get the current card so that we can get the level
+    let current_level = get_card(&conn, id).unwrap().current_level;
+
+    // modify the card in the database and get the level
+    if let Err(_) = modify_card_in_db(&conn, id.to_string(), term.clone(), definition.clone()) {
+        return HttpResponse::InternalServerError().body("Unable to modify card in the database");
+    }
+
+    // modify the card in the the levels
+    let mut state = state.lock().unwrap();
+
+    state.modify_card_in_levels(current_level, id, term, definition);
+
+    HttpResponse::Ok().finish()
+}
+
+#[put("/delete_card/{id}")]
+async fn delete_card(
+    conn: web::Data<Arc<Mutex<Connection>>>,
+    state: web::Data<Arc<Mutex<SpacedRepetition>>>,
+    path: web::Path<i64>,
+) -> HttpResponse {
+    // get the id of the card we want to delete
+    let id = path.into_inner();
+    println!("Delete id: {}", id);
+
+    HttpResponse::Ok().finish()
+}
+
+
+
 #[put("/update_card/{outcome}:{id}")]
 async fn update_card(
     conn: web::Data<Arc<Mutex<Connection>>>,

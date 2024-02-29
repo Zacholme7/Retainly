@@ -1,11 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+/// URL of the webserver
+pub const URL: &str = "http://127.0.0.1:8080";
+
 /// Flashcards
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Card {
     pub term: String,
     pub definition: String,
-    pub id: i32,
+    pub id: i64,
     pub current_level: i64,
 }
 
