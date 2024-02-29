@@ -80,8 +80,25 @@ async fn delete_card(
 ) -> HttpResponse {
     // get the id of the card we want to delete
     let id = path.into_inner();
-    println!("Delete id: {}", id);
 
+    let conn = conn.lock().unwrap();
+    let mut state = state.lock().unwrap();
+
+    // get the current card so that we can get the level
+    let current_level = get_card(&conn, id).unwrap().current_level;
+
+    // make sure the day is not in progress so we dont invalidate the iterator
+    if state.day_in_progress == false {
+        // remove from the database
+        if let Err(_) = remove_card(&conn, id) {
+            return HttpResponse::InternalServerError().body("Cannot remove card from database");
+        }
+        // remove from the levels
+        state.remove_card(current_level, id);
+        
+    } else {
+        return HttpResponse::InternalServerError().body("Cannot remove card while day is in progress");
+    }
     HttpResponse::Ok().finish()
 }
 

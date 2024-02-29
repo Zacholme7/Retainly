@@ -51,6 +51,15 @@ pub fn query_cards(conn: &Connection) -> Result<Vec<Card>, Box<dyn std::error::E
     Ok(cards)
 }
 
+/// Remove a card from the database
+pub fn remove_card(conn: &Connection, id: i64) -> Result<(), Box<dyn std::error::Error>> {
+    conn.execute(
+        "DELETE FROM card WHERE id = ?1",
+        [id],
+    )?;
+    Ok(())
+}
+
 /// Modify card in the database
 pub fn modify_card_in_db(
     conn: &Connection,

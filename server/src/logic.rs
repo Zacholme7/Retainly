@@ -28,7 +28,7 @@ pub struct SpacedRepetition {
     /// Iterate over the cards for the day
     card_iter: CardIterator,
     /// Signals if we are in the middle of the day
-    day_in_progress: bool,
+    pub day_in_progress: bool,
     /// All of the card levels
     levels: Level,
 }
@@ -57,6 +57,7 @@ impl SpacedRepetition {
         }
     }
 
+    /// Modify a card in levels
     pub fn modify_card_in_levels(
         &mut self,
         current_level: i64,
@@ -80,7 +81,26 @@ impl SpacedRepetition {
         if let Some(card) = level_cards.iter_mut().find(|c| c.id == id) {
             card.term = term;
             card.definition = definition;
-        } 
+        }
+    }
+
+    /// Delete a card from levels
+    pub fn remove_card(&mut self, current_level: i64, id: i64) {
+        // get the card level
+        let level_cards = match current_level {
+            1 => &mut self.levels.level_one,
+            2 => &mut self.levels.level_two,
+            3 => &mut self.levels.level_three,
+            4 => &mut self.levels.level_four,
+            5 => &mut self.levels.level_five,
+            6 => &mut self.levels.level_six,
+            7 => &mut self.levels.level_seven,
+            _ => &mut self.levels.learned, // Assuming any level beyond 7 is treated as 'learned'
+        };
+
+        if let Some(pos) = level_cards.iter().position(|c| c.id == id) {
+            level_cards.remove(pos);
+        }
     }
 
     // Upon construction, update the levels with the current cards we are studying
