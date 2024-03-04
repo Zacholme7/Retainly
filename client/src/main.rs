@@ -10,8 +10,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     loop {
         // Clear the screen
-        //print!("\x1B[2J\x1B[1;1H");
-        //io::stdout().flush().unwrap();
+        print!("\x1B[2J\x1B[1;1H");
+        io::stdout().flush().unwrap();
 
         print_general_info(&client).await;
         print!("> ");

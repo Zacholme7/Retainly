@@ -1,6 +1,5 @@
-use common::{Card, GeneralInfo, URL};
+use common::{Card, URL};
 use std::io::{self, Write};
-
 
 /// Process a request from the cli
 pub async fn process_request(
@@ -53,13 +52,19 @@ async fn list_cards(client: &reqwest::Client) -> Result<(), Box<dyn std::error::
     if response.status().is_success() {
         let cards: Vec<Card> = response.json().await?;
         println!(); // for formatting
-        for card in cards {
-            println!(
-                "{}. Term: {}, Definition: {}, Current Level: {}",
-                card.id, card.term, card.definition, card.current_level
-            );
+
+        if cards.len() == 0 {
+            println!("No cards have been added. Add some cards to get started");
+        } else {
+            for card in cards {
+                println!(
+                    "{}. Term: {}, Definition: {}, Current Level: {}",
+                    card.id, card.term, card.definition, card.current_level
+                );
+            }
         }
         println!(); // for formatting
+        read_trimmed_line(); // just so we can see the output before screen clea
         Ok(())
     } else {
         return Err(response.text().await?.into());
@@ -70,7 +75,6 @@ async fn list_cards(client: &reqwest::Client) -> Result<(), Box<dyn std::error::
 async fn modify_card(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
     // list all of the cards so we know which ones we are able to modify
     list_cards(&client).await?;
-
 
     // Get the id of the card we want to modify, the new term, and the new definition
     print!("What is the id of the card you would like to modify: ");
@@ -156,7 +160,6 @@ async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error
     Ok(())
 }
 
-
 /// Gets the next card to learn
 async fn get_next_card(
     client: &reqwest::Client,
@@ -195,7 +198,6 @@ async fn update_card(
         ))),
     }
 }
-
 
 // Helper function to read user input
 fn read_trimmed_line() -> String {

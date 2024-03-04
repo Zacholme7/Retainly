@@ -159,10 +159,16 @@ impl SpacedRepetition {
         match self.card_iter.next() {
             Some(card) => Some(card),
             None => {
-                // set the day to false and increment the day
-                self.day_in_progress = false;
-                self.day = self.day + 1;
-                None
+                // need to make sure we do not have any cards left in level one
+                if self.levels.level_one.len() != 0 {
+                    self.init_day_cards();
+                    return self.card_iter.next(); // guaraneed to have a card here
+                } else {
+                    // set the day to false and increment the day
+                    self.day_in_progress = false;
+                    self.day = self.day + 1;
+                    return None;
+                }
             }
         }
     }
