@@ -5,6 +5,19 @@ Retainly is spaced based repeition learning done right. Traditional spaced based
 
 Retainly sets out to fix this by implementing a [simple yet effective approach](https://ncase.me/remember). 
 
-# In Progress Features
+# Usage 
+1. Put the server on some hosting platform such as aws
+2. Configure URL to be able to connect from client
+3. Run the client on host device or ssh into cloud instance for daily learning
+
+The commands are simple
+- list: lists all of the cards in the deck
+- add: add a new card to the deck
+- modify: modify a card in the deck
+- delete: delete a card from the deck
+- start: start the learning for the day
+
+
+# Future additions
 - Full deck configuration
 - Cool Terminal user interface
