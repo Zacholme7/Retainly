@@ -1,7 +1,7 @@
 # Retainly
 Retainly is spaced based repeition learning done right. Traditional spaced based repeition applications fail in one of two ways
-1) They implement learning algorithms that are gated behind [paywalls](www.quizlet.com)
-2) They have ugly [user interfaces](www.ankiweb.net) with limited configuration
+1) They implement learning algorithms that are gated behind [paywalls](https://www.quizlet.com)
+2) They have ugly [user interfaces](https://www.ankiweb.net) with limited configuration
 
 Retainly sets out to fix this by implementing a [simple yet effective approach](https://ncase.me/remember). 
 
