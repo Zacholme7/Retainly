@@ -6,6 +6,35 @@ use crate::db::*;
 use crate::logic::*;
 use common::{Card, Outcome};
 
+/// Get if the day is currently in progress
+#[get("/is_day_in_progress")]
+async fn is_day_in_progress(
+        state: web::Data<Arc<Mutex<SpacedRepetition>>>
+) -> HttpResponse {
+        let state = state.lock().unwrap();
+        let day_in_progress =  state.day_in_progress;
+
+        if day_in_progress {
+                HttpResponse::Ok().finish()
+        } else {
+                HttpResponse::InternalServerError().finish()
+        }
+}
+
+/// Get the last card that we saw
+#[get("/get_last_card")]
+async fn get_last_card(
+        state: web::Data<Arc<Mutex<SpacedRepetition>>>
+) -> HttpResponse {
+        let state = state.lock().unwrap();
+        let last_card = state.last_card;
+
+        match last_card {
+                Some(card) => HttpResponse::Ok().json(card),
+                None => HttpResponse::InternalServerError().finish()
+        }
+}
+
 /// Insert a new card into the database
 #[post("/insert_card")]
 async fn insert_card(

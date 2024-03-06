@@ -31,6 +31,8 @@ pub struct SpacedRepetition {
     pub day_in_progress: bool,
     /// All of the card levels
     levels: Level,
+    /// The last card that we have seen
+    pub last_card: Option<Card>
 }
 
 impl SpacedRepetition {
@@ -45,6 +47,7 @@ impl SpacedRepetition {
             card_iter: CardIterator::new(Box::new(initial_cards.into_iter())),
             day_in_progress: false,
             levels: Level::default(),
+            last_card: None
         }
     }
 
@@ -162,11 +165,15 @@ impl SpacedRepetition {
                 // need to make sure we do not have any cards left in level one
                 if self.levels.level_one.len() != 0 {
                     self.init_day_cards();
-                    return self.card_iter.next(); // guaraneed to have a card here
+                    // get the next card and set it as our last card that was shown
+                    let card = self.card_iter.next();
+                    self.last_card = card.clone();
+                    card
                 } else {
                     // set the day to false and increment the day
                     self.day_in_progress = false;
                     self.day = self.day + 1;
+                    self.last_card = None;
                     return None;
                 }
             }

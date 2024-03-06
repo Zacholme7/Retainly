@@ -123,41 +123,85 @@ pub async fn delete_card(client: &reqwest::Client) -> Result<(), Box<dyn std::er
     }
 }
 
+/// Check if the current day is in progress
+async fn check_day_in_progress(client: &reqwest::Client) -> Result<bool, Box<dyn std::error::Error>>  {
+        let url = format!("{}/is_day_in_progress", URL);
+        let response = client.get(url).send().await?;
+
+        // if the request is a success, the day is still in progress, else we have not started a day yet
+        match response.status() {
+                reqwest::StatusCode::OK => Ok(true),
+                _ => Ok(false),
+        }
+}
+
+/// Get the very last card that was shown to us
+async fn get_last_card(client: &reqwest::Client) -> Result<Card, Box<dyn std::error::Error>> {
+        let url = format!("{}/get_last_card", URL);
+        let response = client.get(url).send().await?;
+
+        match response.status() {
+                reqwest::StatusCode::OK => {
+                        let card = response.json::<Card>().await?;
+                        Ok(card)
+                }
+                _ => Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Failed to fetch the next card",
+                ))),
+        }
+}
+
 /// Start the learning for the day
 async fn learn(client: &reqwest::Client) -> Result<(), Box<dyn std::error::Error>> {
-    loop {
-        // get the card
-        match get_next_card(client).await? {
-            // we have an other card left in the day
-            Some(card) => {
-                // print info
-                println!();
-                println!("Term: {}", card.term);
-                print!("Outcome? show/y/n: ");
+        // before we start learning, we need to check if the day was interrupted mid session last time
+        let is_day_in_progress = check_day_in_progress(&client).await?;
 
-                // get outcome
-                io::stdout().flush().unwrap();
-                let mut outcome = read_trimmed_line();
-
-                // if we want to see def, show it
-                if outcome == "show" {
-                    println!("Definition: {}", card.definition);
-                    print!("Outcome? y/n: ");
-                    io::stdout().flush().unwrap();
-                    outcome = read_trimmed_line();
-                }
-
-                // update the card in the server with the outcome
-                update_card(&client, card, outcome).await?;
-            }
-            // there are no more cards left in the day
-            None => {
-                println!("day has ended");
-                break;
-            }
+        if is_day_in_progress {
+                // if they day is in progress, we want to get the last card and present it
+                let last_card = get_last_card(&client).await?;
+                handle_card_review(&client, &last_card).await?;
         }
-    }
-    Ok(())
+
+        // loop while we still have cards left in the day to learn
+        loop {
+                // get the card
+                match get_next_card(client).await? {
+                        // we have an other card left in the day
+                        Some(card) => {
+                                handle_card_review(&client, &card).await?;
+                        }
+                        // there are no more cards left in the day
+                        None => {
+                                println!("day has ended");
+                                break;
+                        }
+                }
+        }
+        Ok(())
+}
+
+async fn handle_card_review(client: &reqwest::Client, card: &Card) -> Result<(), Box<dyn std::error::Error>> {
+        // print info
+        println!();
+        println!("Term: {}", card.term);
+        print!("Outcome? show/y/n: ");
+
+        // get outcome
+        io::stdout().flush().unwrap();
+        let mut outcome = read_trimmed_line();
+
+        // if we want to see def, show it
+        if outcome == "show" {
+                println!("Definition: {}", card.definition);
+                print!("Outcome? y/n: ");
+                io::stdout().flush().unwrap();
+                outcome = read_trimmed_line();
+        }
+
+        // update the card in the server with the outcome
+        update_card(&client, card.clone(), outcome).await?;
+        Ok(())
 }
 
 /// Gets the next card to learn
