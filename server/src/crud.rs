@@ -27,7 +27,7 @@ async fn get_last_card(
         state: web::Data<Arc<Mutex<SpacedRepetition>>>
 ) -> HttpResponse {
         let state = state.lock().unwrap();
-        let last_card = state.last_card;
+        let last_card = state.last_card.clone();
 
         match last_card {
                 Some(card) => HttpResponse::Ok().json(card),

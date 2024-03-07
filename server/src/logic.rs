@@ -160,7 +160,10 @@ impl SpacedRepetition {
         // either return the next card to be reviewed or end the day
         // if we do not have any left in the day
         match self.card_iter.next() {
-            Some(card) => Some(card),
+            Some(card) => {
+                self.last_card = Some(card.clone());
+                Some(card)
+            },
             None => {
                 // need to make sure we do not have any cards left in level one
                 if self.levels.level_one.len() != 0 {
