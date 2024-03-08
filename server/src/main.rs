@@ -39,7 +39,7 @@ async fn main() -> std::io::Result<()> {
             .service(is_day_in_progress)
             .service(get_last_card)
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.1:8080")?
     .run()
     .await
 }

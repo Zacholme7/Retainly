@@ -167,7 +167,11 @@ impl SpacedRepetition {
             None => {
                 // need to make sure we do not have any cards left in level one
                 if self.levels.level_one.len() != 0 {
-                    self.init_day_cards();
+                    // turn the first level into a card iterator
+                    let day_one = Day { levels: vec![1] };
+                    let level_one_cards = self.get_cards_for_today(&day_one);
+                    self.card_iter = CardIterator::new(Box::new(level_one_cards.into_iter()));
+
                     // get the next card and set it as our last card that was shown
                     let card = self.card_iter.next();
                     self.last_card = card.clone();

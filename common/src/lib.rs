@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// URL of the webserver
-pub const URL: &str = "http://127.0.0.1:8080";
+pub const URL: &str = "your aws ip and port";
 
 /// Flashcards
 #[derive(Serialize, Deserialize, Debug, Clone)]
